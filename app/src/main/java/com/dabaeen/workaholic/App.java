@@ -28,14 +28,17 @@ public class App extends Application {
     public static final String INITIAL_COUNT = "initialcount";
     public static final String IS_COUNTING = "iscounting";
     public static ArrayList<WorkingDay> WorkingDays;
+    public static ArrayList<WorkingWeek> WorkingWeeks;
     public static SharedPreferences prefs;
     public static long dailyWork = 60*60*8;
+    public static long weeklyWork = dailyWork*3;
     public static Context context;
 
     @Override
     public void onCreate() {
         super.onCreate();
 
+        WorkingWeeks = new ArrayList<WorkingWeek>();
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         context = this;
 
@@ -50,7 +53,6 @@ public class App extends Application {
                 e.printStackTrace();
             }
         }
-
     }
 
     public static boolean saveLog(){
@@ -110,6 +112,12 @@ public class App extends Application {
             WorkingDays.add(new WorkingDay(getDate(Calendar.getInstance().getTime()), 0));
             return WorkingDays.get(WorkingDays.size()-1);
         }
+
+    }
+
+    public static WorkingWeek thisWeek(){
+
+        return WorkingWeeks.get(WorkingWeeks.size()-1);
 
     }
 

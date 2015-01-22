@@ -1,5 +1,6 @@
 package com.dabaeen.workaholic;
 
+import android.animation.TimeInterpolator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
@@ -10,10 +11,17 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
+import android.view.ContextMenu;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.pnikosis.materialishprogress.ProgressWheel;
@@ -21,26 +29,80 @@ import com.pnikosis.materialishprogress.ProgressWheel;
 import java.util.Calendar;
 import java.util.Date;
 
-public class MainActivity extends Activity {
+import com.dabaeen.workaholic.Constants.*;
+
+public class MainActivity extends Activity  {
 
     public final static int PENDING_CODE = 1542;
 
     boolean isRunning = false;
     long initialTime;
+    int currentMode = Mode.DAY;
 
     LinearLayout master;
-    TextView tvDuration;
+    FrameLayout wheelFrame;
+    ScrollView scroll;
+    TextView tvDuration, tvToday;
     ProgressWheel wheel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getActionBar().setDisplayShowTitleEnabled(false);
+        //getActionBar().setDisplayShowTitleEnabled(false);
         setContentView(R.layout.activity_main);
 
         master = (LinearLayout) findViewById(R.id.master);
+        wheelFrame = (FrameLayout) findViewById(R.id.wheelFrame);
+        scroll = (ScrollView) findViewById(R.id.scroll);
         tvDuration = (TextView) findViewById(R.id.tvDuration);
+        tvToday = (TextView) findViewById(R.id.tvToday);
         wheel = (ProgressWheel) findViewById(R.id.progress_wheel);
+
+
+        wheelFrame.setOnTouchListener(new OnSwipeTouchListener(this){
+
+            @Override
+            public void onSwipeRight() {
+               reverse();
+            }
+
+            @Override
+            public void onSwipeLeft() {
+                reverse();
+            }
+
+            public void reverse(){
+                if(currentMode == Mode.DAY) {
+                    currentMode = Mode.WEEK;
+
+                    tvToday.animate().translationXBy(40f).alpha(0).setDuration(300).withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            tvToday.setText("This Week");
+                            tvToday.setTranslationX(-80f);
+                            tvToday.animate().translationXBy(40f).alpha(1).setDuration(300).start();
+                        }
+                    }).start();
+
+                    tvDuration.setText(App.thisWeek().getDuration());
+                    setWeeklyProgress();
+
+                } else {
+                    currentMode = Mode.DAY;
+                    tvToday.animate().translationXBy(40f).alpha(0).setDuration(300).withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            tvToday.setText("Today");
+                            tvToday.setTranslationX(-80f);
+                            tvToday.animate().translationXBy(40f).alpha(1).setDuration(300).start();
+                        }
+                    }).start();
+                    tvDuration.setText(App.today().getDuration());
+                    setWorkingProgress(App.today().SecondsWorked);
+                }
+
+            }
+        });
 
         wheel.setBarWidth(50);
 
@@ -79,8 +141,58 @@ public class MainActivity extends Activity {
 
     public void addDays(){
 
+        int currentWeek = -1;
+
         for(WorkingDay day : App.WorkingDays){
-            master.addView(new DayView(this, day), 1);
+
+            int week = day.getWeek();
+
+            if(week==currentWeek){
+
+                WeekView wv = (WeekView)master.getChildAt(0);
+                wv.addSeconds(day.SecondsWorked);
+
+            } else {
+
+                WeekView wv = new WeekView(this, day.SecondsWorked, week);
+                master.addView(wv, 0);
+                App.WorkingWeeks.add(wv.Week);
+
+            }
+            currentWeek = week;
+            DayView view = new DayView(this, day);
+            master.addView(view, 1);
+
+            // Long click listener and pop up menu
+            view.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(final View view) {
+                    PopupMenu popup = new PopupMenu(MainActivity.this, view);
+                    MenuInflater inflater = popup.getMenuInflater();
+                    popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                        @Override
+                        public boolean onMenuItemClick(MenuItem item) {
+                            switch(item.getItemId()){
+                                case R.id.context_delete:
+                                    master.removeViewInLayout(view);
+                                    view.animate().alpha(0).setDuration(2000).withEndAction(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            App.WorkingDays.remove(((DayView) view).workingDay);
+                                            App.saveLog();
+                                            master.requestLayout();
+                                        }
+                                    }).start();
+                                    break;
+                            }
+                            return true;
+                        }
+                    });
+                    inflater.inflate(R.menu.menu_context, popup.getMenu());
+                    popup.show();
+                    return true;
+                }
+            });
         }
 
     }
@@ -152,6 +264,13 @@ public class MainActivity extends Activity {
 
         wheel.setSpinSpeed((float) seconds/App.dailyWork);
         wheel.setProgress((float) seconds/App.dailyWork);
+
+    }
+
+    private void setWeeklyProgress(){
+
+        wheel.setSpinSpeed((float) App.thisWeek().SecondsWorked/App.weeklyWork);
+        wheel.setProgress((float) App.thisWeek().SecondsWorked / App.weeklyWork);
 
     }
 
@@ -231,6 +350,8 @@ public class MainActivity extends Activity {
         //noinspection SimplifiableIfStatement
         switch(id){
             case R.id.action_settings:
+                Intent i = new Intent(this, SettingsActivity.class);
+                startActivity(i);
                 break;
             case R.id.action_clear:
                 clearData();
@@ -239,4 +360,5 @@ public class MainActivity extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+
 }

@@ -2,9 +2,11 @@ package com.dabaeen.workaholic;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.gc.materialdesign.views.ProgressBarDeterminate;
@@ -15,6 +17,7 @@ import com.gc.materialdesign.views.Slider;
  */
 public class DayView extends LinearLayout {
 
+    public WorkingDay workingDay;
     TextView tvDate, tvDuration;
     ProgressBarDeterminate slider;
 
@@ -30,6 +33,7 @@ public class DayView extends LinearLayout {
 
     private void createLayout(WorkingDay workingDay){
 
+        this.workingDay = workingDay;
         inflate(getContext(), R.layout.view_day, this);
         tvDate = (TextView) findViewById(R.id.tvDate);
         tvDuration = (TextView) findViewById(R.id.tvDuration);
@@ -39,12 +43,6 @@ public class DayView extends LinearLayout {
         tvDuration.setText(workingDay.getDuration());
         slider.setProgress((int) (workingDay.getRatio() * 100));
 
-        setOnLongClickListener(new OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                return false;
-            }
-        });
     }
 
 }

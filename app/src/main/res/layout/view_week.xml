@@ -4,8 +4,10 @@
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/ripple"
-    android:layout_marginLeft="60dp"
-    android:padding="5dp">
+    android:paddingTop="20dp"
+    android:paddingLeft="20dp"
+    android:paddingRight="20dp"
+    android:paddingBottom="5dp">
 
     <LinearLayout
         android:orientation="vertical"
@@ -14,12 +16,12 @@
         android:layout_weight="1">
 
         <TextView
-            android:id="@+id/tvDate"
+            android:id="@+id/tvWeek"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="20sp"
             android:layout_marginBottom="20dp"
-            android:text="05 Jan 13"/>
+            android:text="Week 5"/>
 
         <com.gc.materialdesign.views.ProgressBarDeterminate
             android:id="@+id/slider"

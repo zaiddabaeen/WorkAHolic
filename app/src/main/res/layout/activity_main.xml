@@ -2,14 +2,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:wheel="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scroll"
+    android:layout_marginTop="0dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 <LinearLayout
-    android:id="@+id/master"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_gravity="center"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
@@ -17,6 +17,7 @@
     android:orientation="vertical">
 
     <FrameLayout
+        android:id="@+id/wheelFrame"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:clickable="true"
@@ -24,23 +25,25 @@
         android:background="@drawable/circle_ripple"
         android:onClick="MeasureDuration"
         android:layout_marginBottom="20dp"
-        android:stateListAnimator="@anim/button_elevation"
         android:layout_gravity="center">
 
         <com.pnikosis.materialishprogress.ProgressWheel
             android:id="@+id/progress_wheel"
             android:layout_width="300dp"
             android:layout_height="300dp"
-            wheel:matProg_barColor="#5588FF"
+            wheel:matProg_barColor="@color/primaryDark"
             wheel:matProg_progressIndeterminate="false"
             android:layout_gravity="center"
             wheel:matProg_linearProgress="true"
             wheel:matProg_fillRadius="true" />
 
-        <TextView android:text="Today" android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/tvToday"
+            android:text="Today" android:layout_width="230dp"
             android:layout_height="wrap_content"
             android:textSize="36sp"
             android:textColor="#A1a1a1"
+            android:gravity="center"
             android:textStyle="bold"
             android:layout_gravity="center"
             android:layout_marginTop="-25dp" />
@@ -50,11 +53,19 @@
             android:id="@+id/tvDuration"
             android:textSize="30sp"
             android:layout_gravity="center"
-            android:textColor="#5588FF"
+            android:textColor="@color/primaryDark"
             android:textStyle="bold"
             android:layout_marginTop="25dp" />
 
         </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/master"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        </LinearLayout>
 
 
 </LinearLayout>
