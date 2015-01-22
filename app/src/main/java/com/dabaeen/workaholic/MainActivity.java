@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -63,45 +64,15 @@ public class MainActivity extends Activity  {
 
             @Override
             public void onSwipeRight() {
-               reverse();
+               reverse(1);
             }
 
             @Override
             public void onSwipeLeft() {
-                reverse();
+                reverse(-1);
             }
 
-            public void reverse(){
-                if(currentMode == Mode.DAY) {
-                    currentMode = Mode.WEEK;
 
-                    tvToday.animate().translationXBy(40f).alpha(0).setDuration(300).withEndAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            tvToday.setText("This Week");
-                            tvToday.setTranslationX(-80f);
-                            tvToday.animate().translationXBy(40f).alpha(1).setDuration(300).start();
-                        }
-                    }).start();
-
-                    tvDuration.setText(App.thisWeek().getDuration());
-                    setWeeklyProgress();
-
-                } else {
-                    currentMode = Mode.DAY;
-                    tvToday.animate().translationXBy(40f).alpha(0).setDuration(300).withEndAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            tvToday.setText("Today");
-                            tvToday.setTranslationX(-80f);
-                            tvToday.animate().translationXBy(40f).alpha(1).setDuration(300).start();
-                        }
-                    }).start();
-                    tvDuration.setText(App.today().getDuration());
-                    setWorkingProgress(App.today().SecondsWorked);
-                }
-
-            }
         });
 
         wheel.setBarWidth(50);
@@ -110,32 +81,69 @@ public class MainActivity extends Activity  {
             System.exit(1);
         }
 
-        if(App.prefs.getBoolean(App.IS_COUNTING, false)){
+        addDays();
+    }
 
-            isRunning = true;
-            initialTime = App.prefs.getLong(App.INITIAL_COUNT, 0);
-            if(initialTime==0) master.setBackgroundColor(Color.RED);
+    public void reverse(final int sign){
 
-            startTimer();
+        if(currentMode == Mode.DAY) {
+            currentMode = Mode.WEEK;
+
+            tvToday.animate().translationXBy(sign*40f).alpha(0).setDuration(300).withEndAction(new Runnable() {
+                @Override
+                public void run() {
+                    tvToday.setText("This Week");
+                    tvToday.setX(tvToday.getX() + sign*-80f);
+                    tvToday.animate().translationXBy(sign*40f).alpha(1).setDuration(300).start();
+                }
+            }).start();
+
+            tvToday.setGravity(Gravity.CENTER_HORIZONTAL);
+            tvDuration.setText(App.thisWeek().getDuration());
+            setWeeklyProgress();
 
         } else {
+            currentMode = Mode.DAY;
+            tvToday.animate().translationXBy(sign*40f).alpha(0).setDuration(300).withEndAction(new Runnable() {
+                @Override
+                public void run() {
+                    tvToday.setText("Today");
+                    tvToday.setX(tvToday.getX() + sign*-80f);
+                    tvToday.animate().translationXBy(sign*40f).alpha(1).setDuration(300).start();
+                }
+            }).start();
+
+            tvToday.setGravity(Gravity.CENTER_HORIZONTAL);
+            tvDuration.setText(App.today().getDuration());
             setWorkingProgress(App.today().SecondsWorked);
         }
 
-        tvDuration.setText(App.today().getDuration());
-        addDays();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        if(isRunning && App.prefs.getBoolean(App.IS_COUNTING, false)){
+        if(isRunning || App.prefs.getBoolean(App.IS_COUNTING, true)){
+            isRunning = true;
+            cancelTimer = false;
+
+            if(App.prefs.getBoolean(App.IS_COUNTING, true)) {
+                initialTime = App.prefs.getLong(App.INITIAL_COUNT, 0);
+                if (initialTime == 0) master.setBackgroundColor(Color.RED);
+            }
+
+            startTimer();
+            return;
+        }
+
+        if(!isRunning || App.prefs.getBoolean(App.IS_COUNTING, false)){
             isRunning = false;
             cancelTimer = true;
-            setWorkingProgress(App.today().SecondsWorked);
             tvDuration.setText(App.today().getDuration());
+            setWorkingProgress(App.today().SecondsWorked);
         }
+
 
     }
 

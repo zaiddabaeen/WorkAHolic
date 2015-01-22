@@ -43,7 +43,7 @@
             android:layout_height="wrap_content"
             android:textSize="36sp"
             android:textColor="#A1a1a1"
-            android:gravity="center"
+            android:gravity="center_horizontal"
             android:textStyle="bold"
             android:layout_gravity="center"
             android:layout_marginTop="-25dp" />

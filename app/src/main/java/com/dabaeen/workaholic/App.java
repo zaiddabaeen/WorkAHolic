@@ -42,6 +42,8 @@ public class App extends Application {
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
         context = this;
 
+        getSettings();
+
         if(isFirstRun()){
             WorkingDays = new ArrayList<WorkingDay>();
             WorkingDays.add(new WorkingDay(getDate(Calendar.getInstance().getTime()), 0));
@@ -53,6 +55,13 @@ public class App extends Application {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void getSettings(){
+
+        dailyWork = Integer.valueOf(prefs.getString("setting_day_hour", "8")) * 60 * 60;
+        weeklyWork = Integer.valueOf(prefs.getString("setting_week_hour", "24")) * 60 * 60;
+
     }
 
     public static boolean saveLog(){
