@@ -13,6 +13,7 @@ import java.util.Date;
  */
 public class WorkingDay implements Serializable{
 
+    static final long serialVersionUID =566940470597768075L;
     public String WorkDate = null;
     public long SecondsWorked = 0;
 
@@ -26,6 +27,31 @@ public class WorkingDay implements Serializable{
     public boolean isToday(){
 
         return WorkDate.equals(App.getDate(Calendar.getInstance().getTime()));
+
+    }
+
+    public String getDoW(){
+
+        SimpleDateFormat df = new SimpleDateFormat("dd MMM yy");
+        try {
+            Date date = df.parse(WorkDate);
+
+            SimpleDateFormat wf = new SimpleDateFormat("E");
+            String dow = wf.format(date);
+
+            if(dow.equals("Sat")) dow = "Sa";
+            else if(dow.equals("Sun")) dow = "Su";
+            else if(dow.equals("Thu")){
+                dow = "Th";
+            } else {
+                dow = dow.charAt(0) + "";
+            }
+            return dow;
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        return null;
 
     }
 

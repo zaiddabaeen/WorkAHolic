@@ -18,7 +18,7 @@ import com.gc.materialdesign.views.Slider;
 public class DayView extends LinearLayout {
 
     public WorkingDay workingDay;
-    TextView tvDate, tvDuration;
+    TextView tvDate, tvDuration, tvDoW;
     ProgressBarDeterminate slider;
 
     public DayView(Context context, AttributeSet attrs, int defStyle, WorkingDay workingDay){
@@ -36,10 +36,12 @@ public class DayView extends LinearLayout {
         this.workingDay = workingDay;
         inflate(getContext(), R.layout.view_day, this);
         tvDate = (TextView) findViewById(R.id.tvDate);
+        tvDoW = (TextView) findViewById(R.id.tvDoW);
         tvDuration = (TextView) findViewById(R.id.tvDuration);
         slider = (ProgressBarDeterminate) findViewById(R.id.slider);
 
         tvDate.setText(workingDay.WorkDate);
+        tvDoW.setText(workingDay.getDoW());
         tvDuration.setText(workingDay.getDuration());
         slider.setProgress((int) (workingDay.getRatio() * 100));
 

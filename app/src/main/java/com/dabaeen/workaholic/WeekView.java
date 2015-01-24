@@ -1,6 +1,7 @@
 package com.dabaeen.workaholic;
 
 import android.content.Context;
+import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -11,11 +12,12 @@ import com.gc.materialdesign.views.ProgressBarDeterminate;
 /**
  * Created by redtroops on 1/21/15.
  */
-public class WeekView  extends LinearLayout {
+public class WeekView  extends CardView {
 
     WorkingWeek Week;
     TextView tvWeek, tvDuration;
     ProgressBarDeterminate slider;
+    LinearLayout daysContainer;
 
     public WeekView(Context context, long secondsWorked, int weekNumber){
         super(context);
@@ -28,6 +30,9 @@ public class WeekView  extends LinearLayout {
         tvWeek = (TextView) findViewById(R.id.tvWeek);
         tvDuration = (TextView) findViewById(R.id.tvDuration);
         slider = (ProgressBarDeterminate) findViewById(R.id.slider);
+        daysContainer = (LinearLayout) findViewById(R.id.daysContainer);
+
+//        setTranslationZ(20f);
 
         Week = new WorkingWeek(weekNumber, secondsWorked);
 
@@ -51,4 +56,9 @@ public class WeekView  extends LinearLayout {
 
     }
 
+    public void addDay(DayView day){
+
+        daysContainer.addView(day, 0);
+
+    }
 }

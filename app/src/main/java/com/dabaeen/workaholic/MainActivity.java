@@ -9,9 +9,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.DropBoxManager;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.view.ContextMenu;
+import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -59,21 +61,22 @@ public class MainActivity extends Activity  {
         tvToday = (TextView) findViewById(R.id.tvToday);
         wheel = (ProgressWheel) findViewById(R.id.progress_wheel);
 
+        setWheelGestures();
 
-        wheelFrame.setOnTouchListener(new OnSwipeTouchListener(this){
-
-            @Override
-            public void onSwipeRight() {
-               reverse(1);
-            }
-
-            @Override
-            public void onSwipeLeft() {
-                reverse(-1);
-            }
-
-
-        });
+//        wheelFrame.setOnTouchListener(new OnSwipeTouchListener(this){
+//
+//            @Override
+//            public void onSwipeRight() {
+//               reverse(1);
+//            }
+//
+//            @Override
+//            public void onSwipeLeft() {
+//                reverse(-1);
+//            }
+//
+//
+//        });
 
         wheel.setBarWidth(50);
 
@@ -155,54 +158,64 @@ public class MainActivity extends Activity  {
 
             int week = day.getWeek();
 
-            if(week==currentWeek){
+            DayView view = new DayView(this, day);
 
-                WeekView wv = (WeekView)master.getChildAt(0);
-                wv.addSeconds(day.SecondsWorked);
+            if(day.isToday() || day.SecondsWorked > 0) {
+                if (week == currentWeek) {
 
-            } else {
+                    WeekView wv = (WeekView) master.getChildAt(0);
+                    wv.addSeconds(day.SecondsWorked);
 
-                WeekView wv = new WeekView(this, day.SecondsWorked, week);
-                master.addView(wv, 0);
-                App.WorkingWeeks.add(wv.Week);
+                    wv.addDay(view);
+                } else {
 
+                    WeekView wv = new WeekView(this, day.SecondsWorked, week);
+                    master.addView(wv, 0);
+                    App.WorkingWeeks.add(wv.Week);
+
+                    wv.addDay(view);
+                }
             }
             currentWeek = week;
-            DayView view = new DayView(this, day);
-            master.addView(view, 1);
+            //master.addView(view, 1);
 
-            // Long click listener and pop up menu
-            view.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(final View view) {
-                    PopupMenu popup = new PopupMenu(MainActivity.this, view);
-                    MenuInflater inflater = popup.getMenuInflater();
-                    popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem item) {
-                            switch(item.getItemId()){
-                                case R.id.context_delete:
-                                    master.removeViewInLayout(view);
-                                    view.animate().alpha(0).setDuration(2000).withEndAction(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            App.WorkingDays.remove(((DayView) view).workingDay);
-                                            App.saveLog();
-                                            master.requestLayout();
-                                        }
-                                    }).start();
-                                    break;
-                            }
-                            return true;
-                        }
-                    });
-                    inflater.inflate(R.menu.menu_context, popup.getMenu());
-                    popup.show();
-                    return true;
-                }
-            });
+            addContextMenu(view);
+
         }
 
+    }
+
+    private void addContextMenu(View view){
+        // Long click listener and pop up menu
+        view.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(final View view) {
+                PopupMenu popup = new PopupMenu(MainActivity.this, view);
+                MenuInflater inflater = popup.getMenuInflater();
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch(item.getItemId()){
+                            case R.id.context_delete:
+                                master.removeViewInLayout(view);
+                                view.animate().alpha(0).setDuration(2000).withEndAction(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        App.WorkingDays.remove(((DayView) view).workingDay);
+                                        App.saveLog();
+                                        master.requestLayout();
+                                    }
+                                }).start();
+                                break;
+                        }
+                        return true;
+                    }
+                });
+                inflater.inflate(R.menu.menu_context, popup.getMenu());
+                popup.show();
+                return true;
+            }
+        });
     }
 
     public void MeasureDuration(View view){
@@ -284,7 +297,7 @@ public class MainActivity extends Activity  {
 
     private String formatSeconds(long seconds){
         long hours = seconds / 3600;
-       long  minutes = (seconds % 3600) / 60;
+        long  minutes = (seconds % 3600) / 60;
         seconds = seconds % 60;
 
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
@@ -339,6 +352,54 @@ public class MainActivity extends Activity  {
                 });
 
         builder.show();
+    }
+
+    private void setWheelGestures(){
+
+        final GestureDetector gestureDetector = new GestureDetector(new GestureDetector.OnGestureListener() {
+            @Override
+            public boolean onDown(MotionEvent motionEvent) {
+                return false;
+            }
+
+            @Override
+            public void onShowPress(MotionEvent motionEvent) {
+
+            }
+
+            @Override
+            public boolean onSingleTapUp(MotionEvent motionEvent) {
+                return false;
+            }
+
+            @Override
+            public boolean onScroll(MotionEvent start, MotionEvent finish, float v, float v2) {
+                return false;
+            }
+
+            @Override
+            public void onLongPress(MotionEvent motionEvent) {
+
+            }
+
+            @Override
+            public boolean onFling(MotionEvent start, MotionEvent finish, float v, float v2) {
+                if(start.getRawX() > finish.getRawX()){
+                    reverse(1);
+                } else if(start.getRawX() < finish.getRawX()){
+                    reverse(-1);
+                }
+                return true;
+            }
+        });
+        wheelFrame.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+
+                return gestureDetector.onTouchEvent(motionEvent);
+            }
+        });
+
     }
 
     @Override
