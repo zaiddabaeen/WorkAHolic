@@ -1,6 +1,7 @@
 package com.dabaeen.workaholic;
 
 import android.animation.TimeInterpolator;
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
@@ -12,6 +13,7 @@ import android.os.Bundle;
 import android.os.DropBoxManager;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
+import android.support.v7.internal.view.menu.MenuBuilder;
 import android.view.ContextMenu;
 import android.view.GestureDetector;
 import android.view.Gravity;
@@ -31,6 +33,7 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.gc.materialdesign.views.ButtonFloat;
 import com.pnikosis.materialishprogress.ProgressWheel;
 
 import java.util.ArrayList;
@@ -58,7 +61,6 @@ public class MainActivity extends Activity  {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //getActionBar().setDisplayShowTitleEnabled(false);
         setContentView(R.layout.activity_main);
 
         master = (LinearLayout) findViewById(R.id.master);
@@ -92,7 +94,7 @@ public class MainActivity extends Activity  {
             System.exit(1);
         }
 
-        loadProfiles();
+        getActionBar().setTitle(getResources().getString(R.string.app_name) + ": " + App.CurrentProfile.Name);
         addDays();
 
     }
@@ -452,74 +454,49 @@ public class MainActivity extends Activity  {
 
     }
 
-    public void loadProfiles(){
+    public void showProfiles(View view){
 
-    // you need to have a list of data that you want the spinner to display
-        List<String> spinnerArray =  new ArrayList<String>();
-        for(Profile profile : App.Profiles){
-
-            spinnerArray.add(profile.Name);
-
+        PopupMenu popup = new PopupMenu(MainActivity.this, view);
+        for(Profile profile : App.Profiles) {
+            popup.getMenu().add(profile.Name);
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                this, android.R.layout.simple_spinner_item, spinnerArray);
-
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-
-        int i = 0;
-        for(String profileName : spinnerArray){
-
-            if(profileName.equals(App.CurrentProfile.Name)){
-                spinner.setSelection(i);
-                break;
-            }
-
-            i++;
-        }
-
-        spinner.post(new Runnable() {
+        popup.getMenu().add("New Profile");
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
-            public void run() {
-                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            public boolean onMenuItemClick(MenuItem item) {
+
+                String option = item.getTitle().toString();
+                if(option.equals("New Profile")){
+                    newProfile();
+                    return true;
+                }
+                App.setCurrentProfile(App.getProfileWithName(option));
+                App.WorkingWeeks.clear();
+
+                wheelFrame.animate().alpha(0).setDuration(150).withEndAction(new Runnable() {
                     @Override
-                    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-
-                        App.setCurrentProfile(App.getProfileWithName(adapterView.getSelectedItem().toString()));
-                        App.WorkingWeeks.clear();
-
-                        wheelFrame.animate().alpha(0).setDuration(150).withEndAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                wheelFrame.animate().alpha(1).setDuration(250).start();
-                            }
-                        }).start();
-                        master.animate().alpha(0).setDuration(150).withEndAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                master.removeAllViews();
-                                addDays();
-                                master.animate().alpha(1).setDuration(250).start();
-                            }
-                        }).start();
-
+                    public void run() {
+                        wheelFrame.animate().alpha(1).setDuration(250).start();
                     }
-
+                }).start();
+                master.animate().alpha(0).setDuration(150).withEndAction(new Runnable() {
                     @Override
-                    public void onNothingSelected(AdapterView<?> adapterView) {
-
+                    public void run() {
+                        master.removeAllViews();
+                        addDays();
+                        tvDuration.setText(App.today().getDuration());
+                        setWorkingProgress(App.today().SecondsWorked);
+                        master.animate().alpha(1).setDuration(250).start();
                     }
-                });
+                }).start();
+
+                getActionBar().setTitle(getResources().getString(R.string.app_name) + ": " + App.CurrentProfile.Name);
+
+                return true;
             }
         });
-
-    }
-
-    public void changeProfile(){
-
-//        final Spinner spinner = new Spinner(this);
-//       spinner.set
+        popup.show();
 
     }
 
@@ -552,9 +529,6 @@ public class MainActivity extends Activity  {
                 break;
             case R.id.action_clear:
                 clearData();
-                break;
-            case R.id.action_new_profile:
-                newProfile();
                 break;
         }
 
