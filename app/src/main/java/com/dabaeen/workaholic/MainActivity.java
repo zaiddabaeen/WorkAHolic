@@ -21,16 +21,22 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.pnikosis.materialishprogress.ProgressWheel;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import com.dabaeen.workaholic.Constants.*;
 
@@ -47,6 +53,7 @@ public class MainActivity extends Activity  {
     ScrollView scroll;
     TextView tvDuration, tvToday;
     ProgressWheel wheel;
+    Spinner spinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +67,7 @@ public class MainActivity extends Activity  {
         tvDuration = (TextView) findViewById(R.id.tvDuration);
         tvToday = (TextView) findViewById(R.id.tvToday);
         wheel = (ProgressWheel) findViewById(R.id.progress_wheel);
+        spinner = (Spinner) findViewById(R.id.spinner);
 
         setWheelGestures();
 
@@ -84,7 +92,9 @@ public class MainActivity extends Activity  {
             System.exit(1);
         }
 
+        loadProfiles();
         addDays();
+
     }
 
     public void reverse(final int sign){
@@ -145,6 +155,9 @@ public class MainActivity extends Activity  {
             cancelTimer = true;
             tvDuration.setText(App.today().getDuration());
             setWorkingProgress(App.today().SecondsWorked);
+            spinner.setEnabled(true);
+            spinner.setClickable(true);
+
         }
 
 
@@ -244,6 +257,8 @@ public class MainActivity extends Activity  {
             setWorkingProgress(App.today().SecondsWorked);
             App.saveLog();
             hideNotification();
+            spinner.setEnabled(true);
+            spinner.setClickable(true);
         }
 
     }
@@ -255,6 +270,8 @@ public class MainActivity extends Activity  {
 
         tHandler = new Handler();
         cancelTimer = false;
+        spinner.setEnabled(false);
+        spinner.setClickable(false);
 
         wheel.setSpinSpeed(0.1f);
         wheel.spin();
@@ -309,6 +326,9 @@ public class MainActivity extends Activity  {
         //dismissIntent.setAction(this.getPackageName() + ".STOP");
         PendingIntent piDismiss = PendingIntent.getBroadcast(this, 0, dismissIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
+        Intent openIntent = new Intent(this, MainActivity.class);
+        PendingIntent piOpen = PendingIntent.getActivity(this, 0, openIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
         // Constructs the Builder object.
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this)
@@ -319,6 +339,8 @@ public class MainActivity extends Activity  {
                         .addAction (android.R.drawable.ic_delete,
                                 "Stop", piDismiss)
                         .setAutoCancel(true);
+
+        builder.setContentIntent(piOpen);
 
         NotificationManager mNotifyMgr =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -402,6 +424,112 @@ public class MainActivity extends Activity  {
 
     }
 
+    private void newProfile(){
+
+        final EditText input = new EditText(this);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("New profile name")
+                .setView(input)
+                .setPositiveButton("Create", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        ArrayList<WorkingDay> newWorkingDays = new ArrayList<WorkingDay>();
+                        newWorkingDays.add(new WorkingDay(App.getDate(Calendar.getInstance().getTime()), 0));
+                        App.Profiles.add(new Profile(input.getText().toString(), newWorkingDays));
+                        App.saveLog();
+                        App.WorkingDays = App.Profiles.get(App.Profiles.size()-1).WorkingDays;
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+
+        builder.show();
+
+    }
+
+    public void loadProfiles(){
+
+    // you need to have a list of data that you want the spinner to display
+        List<String> spinnerArray =  new ArrayList<String>();
+        for(Profile profile : App.Profiles){
+
+            spinnerArray.add(profile.Name);
+
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+                this, android.R.layout.simple_spinner_item, spinnerArray);
+
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+
+        int i = 0;
+        for(String profileName : spinnerArray){
+
+            if(profileName.equals(App.CurrentProfile.Name)){
+                spinner.setSelection(i);
+                break;
+            }
+
+            i++;
+        }
+
+        spinner.post(new Runnable() {
+            @Override
+            public void run() {
+                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+
+                        App.setCurrentProfile(App.getProfileWithName(adapterView.getSelectedItem().toString()));
+                        App.WorkingWeeks.clear();
+
+                        wheelFrame.animate().alpha(0).setDuration(150).withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                wheelFrame.animate().alpha(1).setDuration(250).start();
+                            }
+                        }).start();
+                        master.animate().alpha(0).setDuration(150).withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                master.removeAllViews();
+                                addDays();
+                                master.animate().alpha(1).setDuration(250).start();
+                            }
+                        }).start();
+
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> adapterView) {
+
+                    }
+                });
+            }
+        });
+
+    }
+
+    public void changeProfile(){
+
+//        final Spinner spinner = new Spinner(this);
+//       spinner.set
+
+    }
+
+    public void renameProfile(String name){
+
+        App.CurrentProfile.Name = name;
+        App.saveLog();
+
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -424,6 +552,9 @@ public class MainActivity extends Activity  {
                 break;
             case R.id.action_clear:
                 clearData();
+                break;
+            case R.id.action_new_profile:
+                newProfile();
                 break;
         }
 

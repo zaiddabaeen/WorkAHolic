@@ -5,6 +5,7 @@
         <item name="android:colorPrimaryDark">@color/primaryDark</item>
         <item name="android:colorAccent">@color/accent</item>
         <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:spinnerItemStyle">@style/spinnerStyle</item>
         <!--<item name="android:textColorSecondary">#FFFFFF</item>-->
         <!--<item name="actionMenuTextColor">#FFFFFF</item>-->
         <item name="android:textAppearanceLargePopupMenu">@style/myPopupMenuTextAppearanceLarge</item>
@@ -19,6 +20,10 @@
         <item name="android:textColorHint">#AAAAAA</item>
         <item name="android:editTextColor">#000000</item>
         <!--<item name="android:checkMarkTint">@color/primaryDark</item>-->
+    </style>
+
+    <style name="spinnerStyle" parent="android:Widget.TextView.SpinnerItem">
+        <item name="android:textColor">@color/primaryDark</item>
     </style>
 
 </resources>
