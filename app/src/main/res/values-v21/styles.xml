@@ -4,7 +4,7 @@
         <item name="android:colorPrimary">@color/primaryDark</item>
         <item name="android:colorPrimaryDark">@color/primaryDark</item>
         <item name="android:colorAccent">@color/accent</item>
-        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorPrimary">#EEEEEE</item>
         <item name="android:spinnerItemStyle">@style/spinnerStyle</item>
         <!--<item name="android:textColorSecondary">#FFFFFF</item>-->
         <!--<item name="actionMenuTextColor">#FFFFFF</item>-->
@@ -24,6 +24,12 @@
 
     <style name="spinnerStyle" parent="android:Widget.TextView.SpinnerItem">
         <item name="android:textColor">@color/primaryDark</item>
+    </style>
+
+    <style name="Dialogs" parent="android:Theme.Material.Light.Dialog">
+        <item name="android:editTextColor">@color/primary</item>
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:textColorPrimary">@color/primary</item>
     </style>
 
 </resources>

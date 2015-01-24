@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/profile_create" android:title="Create" android:icon="@android:drawable/ic_input_add" app:showAsAction="always" android:titleCondensed="Create"/>
+    <item android:id="@+id/profile_rename" android:title="Rename" android:icon="@android:drawable/ic_menu_sort_alphabetically" app:showAsAction="withText"/>
+    <item android:id="@+id/profile_remove" android:title="Remove" android:icon="@android:drawable/ic_delete" app:showAsAction="withText"/>
+
+</menu>

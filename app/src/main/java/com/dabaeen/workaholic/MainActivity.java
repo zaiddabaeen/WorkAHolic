@@ -8,25 +8,30 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.DropBoxManager;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.internal.view.menu.MenuBuilder;
+import android.view.ActionMode;
 import android.view.ContextMenu;
+import android.view.ContextThemeWrapper;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.SubMenu;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 import android.widget.ScrollView;
@@ -57,6 +62,7 @@ public class MainActivity extends Activity  {
     TextView tvDuration, tvToday;
     ProgressWheel wheel;
     Spinner spinner;
+    ImageButton btnProfiles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +76,7 @@ public class MainActivity extends Activity  {
         tvToday = (TextView) findViewById(R.id.tvToday);
         wheel = (ProgressWheel) findViewById(R.id.progress_wheel);
         spinner = (Spinner) findViewById(R.id.spinner);
+        btnProfiles = (ImageButton) findViewById(R.id.btnProfiles);
 
         setWheelGestures();
 
@@ -168,6 +175,7 @@ public class MainActivity extends Activity  {
     public void addDays(){
 
         int currentWeek = -1;
+        master.removeAllViews();
 
         for(WorkingDay day : App.WorkingDays){
 
@@ -429,8 +437,9 @@ public class MainActivity extends Activity  {
     private void newProfile(){
 
         final EditText input = new EditText(this);
+        input.setTextColor(getResources().getColor(R.color.primary));
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.Dialogs))
                 .setTitle("New profile name")
                 .setView(input)
                 .setPositiveButton("Create", new DialogInterface.OnClickListener() {
@@ -461,16 +470,29 @@ public class MainActivity extends Activity  {
             popup.getMenu().add(profile.Name);
         }
 
-        popup.getMenu().add("New Profile");
+        SubMenu subMenu = popup.getMenu().addSubMenu(0, 0, 0, "Manage Profile");
+        //getItem(popup.getMenu().size()-1).getSubMenu();
+        subMenu.add("Create");
+        subMenu.add("Rename");
+        subMenu.add("Remove");
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
 
                 String option = item.getTitle().toString();
-                if(option.equals("New Profile")){
+                if (option.equals("Manage Profile")) {
+                    return true;
+                } else if(option.equals("Create")){
                     newProfile();
                     return true;
+                } else if(option.equals("Rename")){
+                    renameProfile();
+                    return true;
+                } else if(option.equals("Remove")){
+                    removeProfile();
+                    return true;
                 }
+
                 App.setCurrentProfile(App.getProfileWithName(option));
                 App.WorkingWeeks.clear();
 
@@ -483,7 +505,6 @@ public class MainActivity extends Activity  {
                 master.animate().alpha(0).setDuration(150).withEndAction(new Runnable() {
                     @Override
                     public void run() {
-                        master.removeAllViews();
                         addDays();
                         tvDuration.setText(App.today().getDuration());
                         setWorkingProgress(App.today().SecondsWorked);
@@ -500,11 +521,100 @@ public class MainActivity extends Activity  {
 
     }
 
-    public void renameProfile(String name){
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        getMenuInflater().inflate(R.menu.menu_manage, menu);
+    }
 
-        App.CurrentProfile.Name = name;
-        App.saveLog();
+    private ActionMode.Callback manageProfilesCallback = new ActionMode.Callback() {
 
+        // Called when the action mode is created; startActionMode() was called
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            // Inflate a menu resource providing context menu items
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.menu_manage, menu);
+            return true;
+        }
+
+        // Called each time the action mode is shown. Always called after onCreateActionMode, but
+        // may be called multiple times if the mode is invalidated.
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false; // Return false if nothing is done
+        }
+
+        // Called when the user selects a contextual menu item
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+//                case R.id.:
+//                    shareCurrentItem();
+//                    mode.finish(); // Action picked, so close the CAB
+//                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        // Called when the user exits the action mode
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+//            mActionMode = null;
+        }
+    };
+
+    public void renameProfile(){
+
+        final EditText input = new EditText(this);
+        input.setTextColor(getResources().getColor(R.color.primary));
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.Dialogs))
+                .setTitle("Rename profile")
+                .setView(input)
+                .setPositiveButton("Rename", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        App.CurrentProfile.Name = input.getText().toString();
+                        App.saveLog();
+                        getActionBar().setTitle(getResources().getString(R.string.app_name) + ": " + App.CurrentProfile.Name);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+
+        builder.show();
+
+    }
+
+    public void removeProfile(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.Dialogs))
+                .setTitle("Remove profile")
+                .setMessage("This cannot be undone")
+                .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        App.Profiles.remove(App.CurrentProfile);
+                        App.setCurrentProfile(App.Profiles.get(0));
+                        App.saveLog();
+                        addDays();
+                        getActionBar().setTitle(getResources().getString(R.string.app_name) + ": " + App.CurrentProfile.Name);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+
+        builder.show();
     }
 
     @Override
