@@ -1,6 +1,7 @@
 package com.dabaeen.workaholic;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.AttributeSet;
 import android.view.MenuInflater;
 import android.view.View;
@@ -44,6 +45,7 @@ public class DayView extends LinearLayout {
         tvDoW.setText(workingDay.getDoW());
         tvDuration.setText(workingDay.getDuration());
         slider.setProgress((int) (workingDay.getRatio() * 100));
+        if(workingDay.getRatio() > 1) slider.setBackgroundColor(getResources().getColor(R.color.gplus_color_4));
 
     }
 

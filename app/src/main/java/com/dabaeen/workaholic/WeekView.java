@@ -38,7 +38,8 @@ public class WeekView  extends CardView {
 
         tvWeek.setText("Week " + weekNumber);
         tvDuration.setText(Week.getDuration());
-        slider.setProgress((int) (Week.SecondsWorked / (float) App.weeklyWork * 100));
+        slider.setProgress((int) (Week.getRatio() * 100));
+        if(Week.getRatio() > 1) slider.setBackgroundColor(getResources().getColor(R.color.gplus_color_4));
 
         setOnLongClickListener(new OnLongClickListener() {
             @Override

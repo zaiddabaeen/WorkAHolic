@@ -7,6 +7,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * Created by redtroops on 1/20/15.
@@ -76,9 +77,9 @@ public class WorkingDay implements Serializable{
         try {
             Date date = df.parse(WorkDate);
 
-            SimpleDateFormat wf = new SimpleDateFormat("ww");
-            String week = wf.format(date);
-            return Integer.valueOf(week);
+            SimpleDateFormat wf = new SimpleDateFormat("DDD");
+            String doY = wf.format(date);
+            return (Integer.valueOf(doY) + GregorianCalendar.getInstance().getFirstDayOfWeek()+1) / 7;
         } catch (ParseException e) {
             e.printStackTrace();
         }

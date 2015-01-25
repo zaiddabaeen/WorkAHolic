@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/wheelFrame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:elevation="1dp"
+        android:orientation="vertical"
+        android:onClick="CloseThis"
+        android:layout_margin="10dp"
+        android:layout_gravity="center">
+
+        <com.pnikosis.materialishprogress.ProgressWheel
+            android:id="@+id/progress_wheel"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            app:matProg_barColor="@color/primaryDark"
+            app:matProg_progressIndeterminate="false"
+            android:layout_gravity="center"
+            app:matProg_linearProgress="true"
+            app:matProg_fillRadius="true" />
+
+        <TextView
+            android:id="@+id/tvToday"
+            android:text="Today" android:layout_width="230dp"
+            android:layout_height="wrap_content"
+            android:textSize="24sp"
+            android:textColor="#A1a1a1"
+            android:gravity="center_horizontal"
+            android:textStyle="bold"
+            android:layout_gravity="center" />
+
+        <TextView android:text="00:00" android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvDuration"
+            android:textSize="18sp"
+            android:layout_gravity="center"
+            android:textColor="@color/primaryDark"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</android.support.v7.widget.CardView>

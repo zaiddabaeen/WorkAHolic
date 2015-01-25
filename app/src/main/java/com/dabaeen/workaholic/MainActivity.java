@@ -15,6 +15,7 @@ import android.os.DropBoxManager;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.internal.view.menu.MenuBuilder;
+import android.util.Log;
 import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.ContextThemeWrapper;
@@ -44,6 +45,7 @@ import com.pnikosis.materialishprogress.ProgressWheel;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import com.dabaeen.workaholic.Constants.*;
@@ -61,7 +63,6 @@ public class MainActivity extends Activity  {
     ScrollView scroll;
     TextView tvDuration, tvToday;
     ProgressWheel wheel;
-    Spinner spinner;
     ImageButton btnProfiles;
 
     @Override
@@ -75,7 +76,6 @@ public class MainActivity extends Activity  {
         tvDuration = (TextView) findViewById(R.id.tvDuration);
         tvToday = (TextView) findViewById(R.id.tvToday);
         wheel = (ProgressWheel) findViewById(R.id.progress_wheel);
-        spinner = (Spinner) findViewById(R.id.spinner);
         btnProfiles = (ImageButton) findViewById(R.id.btnProfiles);
 
         setWheelGestures();
@@ -121,7 +121,6 @@ public class MainActivity extends Activity  {
             }).start();
 
             tvToday.setGravity(Gravity.CENTER_HORIZONTAL);
-            tvDuration.setText(App.thisWeek().getDuration());
             setWeeklyProgress();
 
         } else {
@@ -136,7 +135,6 @@ public class MainActivity extends Activity  {
             }).start();
 
             tvToday.setGravity(Gravity.CENTER_HORIZONTAL);
-            tvDuration.setText(App.today().getDuration());
             setWorkingProgress(App.today().SecondsWorked);
         }
 
@@ -146,26 +144,21 @@ public class MainActivity extends Activity  {
     protected void onResume() {
         super.onResume();
 
-        if(isRunning || App.prefs.getBoolean(App.IS_COUNTING, true)){
+        if(App.prefs.getBoolean(App.IS_COUNTING, true)){
             isRunning = true;
             cancelTimer = false;
 
-            if(App.prefs.getBoolean(App.IS_COUNTING, true)) {
                 initialTime = App.prefs.getLong(App.INITIAL_COUNT, 0);
                 if (initialTime == 0) master.setBackgroundColor(Color.RED);
-            }
 
             startTimer();
             return;
-        }
-
-        if(!isRunning || App.prefs.getBoolean(App.IS_COUNTING, false)){
+        } else {
             isRunning = false;
             cancelTimer = true;
-            tvDuration.setText(App.today().getDuration());
             setWorkingProgress(App.today().SecondsWorked);
-            spinner.setEnabled(true);
-            spinner.setClickable(true);
+            btnProfiles.setEnabled(true);
+            btnProfiles.setClickable(true);
 
         }
 
@@ -181,6 +174,7 @@ public class MainActivity extends Activity  {
 
             int week = day.getWeek();
 
+            Log.i("workaholic", day.WorkDate + " " + day.getWeek() + " " + GregorianCalendar.getInstance().getFirstDayOfWeek());
             DayView view = new DayView(this, day);
 
             if(day.isToday() || day.SecondsWorked > 0) {
@@ -263,12 +257,11 @@ public class MainActivity extends Activity  {
             duration /= 1000;
 
             App.today().SecondsWorked += duration;
-            tvDuration.setText(App.today().getDuration());
             setWorkingProgress(App.today().SecondsWorked);
             App.saveLog();
             hideNotification();
-            spinner.setEnabled(true);
-            spinner.setClickable(true);
+            btnProfiles.setEnabled(true);
+            btnProfiles.setClickable(true);
         }
 
     }
@@ -280,8 +273,8 @@ public class MainActivity extends Activity  {
 
         tHandler = new Handler();
         cancelTimer = false;
-        spinner.setEnabled(false);
-        spinner.setClickable(false);
+        btnProfiles.setEnabled(false);
+        btnProfiles.setClickable(false);
 
         wheel.setSpinSpeed(0.1f);
         wheel.spin();
@@ -310,15 +303,31 @@ public class MainActivity extends Activity  {
 
     private void setWorkingProgress(long seconds){
 
-        wheel.setSpinSpeed((float) seconds/App.dailyWork);
-        wheel.setProgress((float) seconds/App.dailyWork);
+        tvDuration.setText(App.today().getDuration());
+        float progress = (float) seconds/App.dailyWork;
+        if(progress>1) {
+            progress = 1;
+            wheel.setBarColor(getResources().getColor(R.color.gplus_color_4));
+        } else {
+            wheel.setBarColor(getResources().getColor(R.color.primaryDark));
+        }
+        wheel.setSpinSpeed(progress);
+        wheel.setProgress(progress);
 
     }
 
     private void setWeeklyProgress(){
 
-        wheel.setSpinSpeed((float) App.thisWeek().SecondsWorked/App.weeklyWork);
-        wheel.setProgress((float) App.thisWeek().SecondsWorked / App.weeklyWork);
+        tvDuration.setText(App.thisWeek().getDuration());
+        float progress = (float) App.thisWeek().SecondsWorked/App.weeklyWork;
+        if(progress>1) {
+            progress = 1;
+            wheel.setBarColor(getResources().getColor(R.color.gplus_color_4));
+        } else {
+            wheel.setBarColor(getResources().getColor(R.color.primaryDark));
+        }
+        wheel.setSpinSpeed(progress);
+        wheel.setProgress(progress);
 
     }
 
@@ -332,6 +341,8 @@ public class MainActivity extends Activity  {
 
     private void showNotification(){
 
+        if(!App.prefs.getBoolean("setting_notif_menu", true)) return;
+
         Intent dismissIntent = new Intent(this.getPackageName() + ".STOP");
         //dismissIntent.setAction(this.getPackageName() + ".STOP");
         PendingIntent piDismiss = PendingIntent.getBroadcast(this, 0, dismissIntent, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -343,9 +354,10 @@ public class MainActivity extends Activity  {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this)
                         .setContentTitle("WorkAHolic")
+                        .setContentText("Working: " + App.CurrentProfile.Name)
                         .setSmallIcon(R.drawable.ic_launcher)
                         .setStyle(new NotificationCompat.BigTextStyle()
-                                .bigText("Working"))
+                                .bigText("Working: " + App.CurrentProfile.Name))
                         .addAction (android.R.drawable.ic_delete,
                                 "Stop", piDismiss)
                         .setAutoCancel(true);
@@ -449,7 +461,7 @@ public class MainActivity extends Activity  {
                         newWorkingDays.add(new WorkingDay(App.getDate(Calendar.getInstance().getTime()), 0));
                         App.Profiles.add(new Profile(input.getText().toString(), newWorkingDays));
                         App.saveLog();
-                        App.WorkingDays = App.Profiles.get(App.Profiles.size()-1).WorkingDays;
+                        App.setCurrentProfile(App.Profiles.get(App.Profiles.size()-1));
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -506,7 +518,6 @@ public class MainActivity extends Activity  {
                     @Override
                     public void run() {
                         addDays();
-                        tvDuration.setText(App.today().getDuration());
                         setWorkingProgress(App.today().SecondsWorked);
                         master.animate().alpha(1).setDuration(250).start();
                     }
@@ -571,7 +582,7 @@ public class MainActivity extends Activity  {
         input.setTextColor(getResources().getColor(R.color.primary));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.Dialogs))
-                .setTitle("Rename profile")
+                .setTitle("Rename profile " + App.CurrentProfile.Name)
                 .setView(input)
                 .setPositiveButton("Rename", new DialogInterface.OnClickListener() {
                     @Override
@@ -595,7 +606,7 @@ public class MainActivity extends Activity  {
     public void removeProfile(){
 
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(this, R.style.Dialogs))
-                .setTitle("Remove profile")
+                .setTitle("Remove profile " + App.CurrentProfile.Name)
                 .setMessage("This cannot be undone")
                 .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
                     @Override
@@ -604,6 +615,7 @@ public class MainActivity extends Activity  {
                         App.setCurrentProfile(App.Profiles.get(0));
                         App.saveLog();
                         addDays();
+                        setWorkingProgress(App.today().SecondsWorked);
                         getActionBar().setTitle(getResources().getString(R.string.app_name) + ": " + App.CurrentProfile.Name);
                     }
                 })

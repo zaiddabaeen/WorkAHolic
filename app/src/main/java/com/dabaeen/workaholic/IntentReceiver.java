@@ -30,5 +30,8 @@ public class IntentReceiver extends BroadcastReceiver {
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         mNotifyMgr.cancel(MainActivity.PENDING_CODE);
 
+        Intent i = new Intent(context, NotificationActivity.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(i);
     }
 }

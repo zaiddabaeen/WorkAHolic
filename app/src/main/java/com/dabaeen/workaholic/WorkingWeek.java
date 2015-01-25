@@ -23,4 +23,10 @@ public class WorkingWeek {
         return String.format("%02d:%02d", hours, minutes);
 
     }
+
+    public float getRatio(){
+
+        return (SecondsWorked/(float) App.weeklyWork);
+
+    }
 }
