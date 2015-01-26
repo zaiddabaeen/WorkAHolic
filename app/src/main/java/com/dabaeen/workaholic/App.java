@@ -3,6 +3,7 @@ package com.dabaeen.workaholic;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -188,5 +189,8 @@ public class App extends Application {
 
     }
 
+    public static void playSound(){
+        MediaPlayer.create(context, R.raw.believe).start();
+    }
 
 }

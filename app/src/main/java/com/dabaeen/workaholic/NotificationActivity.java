@@ -15,6 +15,7 @@ import com.pnikosis.materialishprogress.ProgressWheel;
  */
 public class NotificationActivity extends Activity {
 
+    boolean viewed = false;
     ProgressWheel wheel;
     TextView tvDuration, tvToday;
 
@@ -32,13 +33,9 @@ public class NotificationActivity extends Activity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
     public void onWindowFocusChanged(boolean hasFocus) {
-        if(hasFocus){
+        if(hasFocus && !viewed){
+            viewed = true;
             setWorkingProgress(App.today().SecondsWorked);
         }
         super.onWindowFocusChanged(hasFocus);
@@ -64,6 +61,8 @@ public class NotificationActivity extends Activity {
         }
         wheel.setSpinSpeed(progress);
         wheel.setProgress(progress);
+
+        App.playSound();
 
        Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
