@@ -49,4 +49,14 @@ public class DayView extends LinearLayout {
 
     }
 
+    public void refreshDay(WorkingDay day){
+        workingDay = day;
+
+        tvDate.setText(workingDay.WorkDate);
+        tvDoW.setText(workingDay.getDoW());
+        tvDuration.setText(workingDay.getDuration());
+        slider.setProgress((int) (workingDay.getRatio() * 100));
+        if(workingDay.getRatio() > 1) slider.setBackgroundColor(getResources().getColor(R.color.gplus_color_4));
+    }
+
 }

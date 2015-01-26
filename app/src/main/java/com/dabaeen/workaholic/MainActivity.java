@@ -3,9 +3,12 @@ package com.dabaeen.workaholic;
 import android.animation.TimeInterpolator;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
@@ -38,6 +41,7 @@ import android.widget.PopupMenu;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import com.gc.materialdesign.views.ButtonFloat;
 import com.pnikosis.materialishprogress.ProgressWheel;
@@ -57,11 +61,12 @@ public class MainActivity extends Activity  {
     boolean isRunning = false;
     long initialTime;
     int currentMode = Mode.DAY;
+    long total = 0;
 
     LinearLayout master;
     FrameLayout wheelFrame;
     ScrollView scroll;
-    TextView tvDuration, tvToday;
+    TextView tvDuration, tvToday, tvTotal;
     ProgressWheel wheel;
     ImageButton btnProfiles;
 
@@ -75,6 +80,7 @@ public class MainActivity extends Activity  {
         scroll = (ScrollView) findViewById(R.id.scroll);
         tvDuration = (TextView) findViewById(R.id.tvDuration);
         tvToday = (TextView) findViewById(R.id.tvToday);
+        tvTotal = (TextView) findViewById(R.id.tvTotal);
         wheel = (ProgressWheel) findViewById(R.id.progress_wheel);
         btnProfiles = (ImageButton) findViewById(R.id.btnProfiles);
 
@@ -168,6 +174,7 @@ public class MainActivity extends Activity  {
     public void addDays(){
 
         int currentWeek = -1;
+        total = 0;
         master.removeAllViews();
 
         for(WorkingDay day : App.WorkingDays){
@@ -176,6 +183,7 @@ public class MainActivity extends Activity  {
 
             Log.i("workaholic", day.WorkDate + " " + day.getWeek() + " " + GregorianCalendar.getInstance().getFirstDayOfWeek());
             DayView view = new DayView(this, day);
+            total += day.SecondsWorked;
 
             if(day.isToday() || day.SecondsWorked > 0) {
                 if (week == currentWeek) {
@@ -200,6 +208,8 @@ public class MainActivity extends Activity  {
 
         }
 
+        tvTotal.setText(String.format("%02d:%02d", total/3600, (total%3600)/60));
+
     }
 
     private void addContextMenu(View view){
@@ -212,17 +222,32 @@ public class MainActivity extends Activity  {
                 popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
+                        final WorkingDay wDay = ((DayView) view).workingDay;
                         switch(item.getItemId()){
                             case R.id.context_delete:
                                 master.removeViewInLayout(view);
                                 view.animate().alpha(0).setDuration(2000).withEndAction(new Runnable() {
                                     @Override
                                     public void run() {
-                                        App.WorkingDays.remove(((DayView) view).workingDay);
+                                        App.WorkingDays.remove(wDay);
                                         App.saveLog();
                                         master.requestLayout();
                                     }
                                 }).start();
+                                break;
+                            case R.id.context_edit:
+                                TimePickerDialog timePickerDialog = new TimePickerDialog(
+                                        MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                                    @Override
+                                    public void onTimeSet(TimePicker timePicker, int hours, int minutes) {
+                                        long seconds = hours * 60 * 60 + minutes * 60;
+                                        wDay.SecondsWorked = seconds;
+                                        ((DayView) view).refreshDay(wDay);
+                                        App.saveLog();
+                                    }
+                                }, wDay.getHours(), wDay.getMinutes(), true);
+                                timePickerDialog.setTitle("Work duration for " + wDay.WorkDate);
+                                timePickerDialog.show();
                                 break;
                         }
                         return true;
@@ -360,7 +385,10 @@ public class MainActivity extends Activity  {
                                 .bigText("Working: " + App.CurrentProfile.Name))
                         .addAction (android.R.drawable.ic_delete,
                                 "Stop", piDismiss)
-                        .setAutoCancel(true);
+                        .setAutoCancel(true)
+                        .setColor(getResources().getColor(R.color.primaryDark))
+                        .setSmallIcon(R.drawable.ic_stat)
+                        .setOngoing(true);
 
         builder.setContentIntent(piOpen);
 
@@ -368,6 +396,39 @@ public class MainActivity extends Activity  {
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         mNotifyMgr.notify(PENDING_CODE, builder.build());
 
+        setAlarm();
+
+    }
+
+    private void setAlarm(){
+
+        AlarmManager alarmMgr;
+        PendingIntent alarmIntent;
+
+        alarmMgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(this, NotificationActivity.class);
+        alarmIntent = PendingIntent.getActivity(this, 0, intent, 0);
+
+        long secondsLeft = App.dailyWork - App.today().SecondsWorked;
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.add(Calendar.SECOND, (int) secondsLeft);
+
+        alarmMgr.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), alarmIntent);
+
+    }
+
+    private void stopAlarm(){
+
+        AlarmManager alarmMgr;
+        PendingIntent alarmIntent;
+
+        alarmMgr = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(getApplicationContext(), NotificationActivity.class);
+        alarmIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
+
+        alarmMgr.cancel(alarmIntent);
     }
 
     private void hideNotification(){
@@ -376,6 +437,7 @@ public class MainActivity extends Activity  {
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         mNotifyMgr.cancel(PENDING_CODE);
 
+        stopAlarm();
     }
 
     private void clearData(){

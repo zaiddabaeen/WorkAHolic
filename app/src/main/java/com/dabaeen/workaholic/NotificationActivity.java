@@ -34,15 +34,29 @@ public class NotificationActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+    }
 
-        setWorkingProgress(App.today().SecondsWorked);
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        if(hasFocus){
+            setWorkingProgress(App.today().SecondsWorked);
+        }
+        super.onWindowFocusChanged(hasFocus);
     }
 
     private void setWorkingProgress(long seconds){
 
-        tvDuration.setText(App.today().getDuration());
-        float progress = (float) seconds/App.dailyWork;
-        if(progress>1) {
+        float progress;
+
+        if(App.prefs.getBoolean(App.IS_COUNTING, false)){
+            tvDuration.setText("Reached Day Goal!");
+            progress = 1;
+        } else {
+            tvDuration.setText(App.today().getDuration());
+            progress = (float) seconds/App.dailyWork;
+        }
+
+        if(progress>=1) {
             progress = 1;
             wheel.setBarColor(getResources().getColor(R.color.gplus_color_4));
         } else {

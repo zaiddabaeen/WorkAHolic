@@ -71,6 +71,18 @@ public class WorkingDay implements Serializable{
 
     }
 
+    public int getMinutes(){
+
+        return (int) (SecondsWorked % 3600) / 60;
+
+    }
+
+    public int getHours(){
+
+        return (int) (SecondsWorked / 3600);
+
+    }
+
     public int getWeek(){
 
         SimpleDateFormat df = new SimpleDateFormat("dd MMM yy");
