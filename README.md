@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/zaiddabaeen/WorkAHolic/master/app/src/main/res/drawable/workaholicw.png" alt="WorkAHolic" style="width: 50px;"/>
+<img src="https://raw.githubusercontent.com/zaiddabaeen/WorkAHolic/master/app/src/main/res/drawable/workaholicw.png" alt="WorkAHolic" width="100"/>
 # WorkAHolic
 
 Ever wondered how much you are working a week?
