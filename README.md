@@ -12,4 +12,4 @@ It showcases Android Lollipop 5.0 features such as:
 * UI Colors
 and others...
 
-![Screeenshot](https://raw.githubusercontent.com/zaiddabaeen/WorkAHolic/master/screenshot.jpeg)
+![Screeenshot](https://raw.githubusercontent.com/zaiddabaeen/WorkAHolic/master/screenshot.jpg)
