@@ -18,6 +18,7 @@ import android.os.DropBoxManager;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.internal.view.menu.MenuBuilder;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.ContextMenu;
@@ -30,6 +31,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.SubMenu;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -188,14 +190,22 @@ public class MainActivity extends Activity  {
             if(day.isToday() || day.SecondsWorked > 0) {
                 if (week == currentWeek) {
 
-                    WeekView wv = (WeekView) master.getChildAt(0);
+                    WeekView wv = (WeekView) ((CardView) master.getChildAt(0)).getChildAt(0);
                     wv.addSeconds(day.SecondsWorked);
 
                     wv.addDay(view);
                 } else {
 
+                    // Creating Week View
+                    CardView cv = new CardView(this);
+                    cv.setRadius(10);
+                    LinearLayout.LayoutParams parm = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    parm.setMargins(10,10,10,10);
+                    cv.setLayoutParams(parm);
                     WeekView wv = new WeekView(this, day.SecondsWorked, week);
-                    master.addView(wv, 0);
+                    cv.addView(wv);
+                    master.addView(cv, 0);
+
                     App.WorkingWeeks.add(wv.Week);
 
                     wv.addDay(view);

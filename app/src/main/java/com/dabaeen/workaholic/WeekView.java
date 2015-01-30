@@ -12,7 +12,7 @@ import com.gc.materialdesign.views.ProgressBarDeterminate;
 /**
  * Created by redtroops on 1/21/15.
  */
-public class WeekView  extends CardView {
+public class WeekView  extends LinearLayout {
 
     WorkingWeek Week;
     TextView tvWeek, tvDuration;
