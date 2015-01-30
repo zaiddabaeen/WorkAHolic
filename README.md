@@ -11,3 +11,5 @@ It showcases Android Lollipop 5.0 features such as:
 * Floating Button
 * UI Colors
 and others...
+
+[Screeenshot](https://raw.githubusercontent.com/zaiddabaeen/WorkAHolic/master/screenshot.jpeg)
