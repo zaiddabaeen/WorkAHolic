@@ -3,7 +3,7 @@
 
 Ever wondered how much you are working a week?
 
-Use the beautiful Lollipop-enabled WorkAHolic app to help you measure how much you work per week. 
+Use the beautiful Lollipop-enabled WorkAHolic app to help you measure how much you work per week. You can create work profiles. It notifies you when you are done working for the day.
 
 It showcases Android Lollipop 5.0 features such as:
 * CardViews
